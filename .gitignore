@@ -5,6 +5,7 @@
 
 *.a
 *.lib
+*.dll
 
 # VSCode
 .vscode/
