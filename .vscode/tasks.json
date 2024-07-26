@@ -27,7 +27,7 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "Tâche générée par le débogueur."
+            "detail": "Debug build for codespace"
         },
         {
             "type": "cppbuild",
@@ -56,7 +56,7 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "Tâche générée par le débogueur."
+            "detail": "Bebud build for Windows"
         },
         {
             "type": "cppbuild",
@@ -90,7 +90,46 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "Tâche générée par le débogueur."
+            "detail": "Debug build for macOS"
+        },
+        {
+            "label": "MACOS",
+            "dependsOn": [
+                "DEBUG MACOS"
+            ],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "command": "${workspaceFolder}/bin/main"
+        },
+        {
+            "label": "WINDOWS",
+            "dependsOn": [
+                "DEBUG WIN"
+            ],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "command": "${workspaceFolder}/bin/main.exe"
+        },
+        {
+            "label": "CODESPACE",
+            "dependsOn": [
+                "DEBUG CODESPACE"
+            ],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "command": "${workspaceFolder}/bin/main"
         }
     ],
     "version": "2.0.0"
