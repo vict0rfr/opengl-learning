@@ -2,7 +2,7 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: g++ générer le fichier actif",
+            "label": "DEBUG CODESPACE",
             "command": "/usr/bin/g++",
             "args": [
                 "-fdiagnostics-color=always",
@@ -16,6 +16,35 @@
                 "-lglfw3",
                 "-ldl",
                 "-lpthread"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Tâche générée par le débogueur."
+        },
+        {
+            "type": "cppbuild",
+            "label": "DEBUG WIN",
+            "command": "C:\\msys64\\ucrt64\\bin\\g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}/src/main.cpp",
+                "${workspaceFolder}/src/glad.c",
+                "-o",
+                "${workspaceFolder}/bin/main.exe",
+                "-I${workspaceFolder}/include/",
+                "-L${workspaceFolder}/lib/",
+                "-lglfw3",
+                "-lgdi32",
+                "-luser32"
             ],
             "options": {
                 "cwd": "${fileDirname}"

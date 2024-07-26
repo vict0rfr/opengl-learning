@@ -3,5 +3,8 @@
 *.out
 *.app
 
+*.a
+*.lib
+
 # VSCode
 .vscode/
