@@ -85,13 +85,14 @@ int main()
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
-    glUseProgram(shaderProgram);
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    
+    glUseProgram(shaderProgram);
 
 
     // render loop

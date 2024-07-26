@@ -57,6 +57,40 @@
                 "isDefault": true
             },
             "detail": "Tâche générée par le débogueur."
+        },
+        {
+            "type": "cppbuild",
+            "label": "DEBUG MACOS",
+            "command": "/usr/bin/clang++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}/src/main.cpp",
+                "${workspaceFolder}/src/glad.c",
+                "-o",
+                "${workspaceFolder}/bin/main",
+                "-I${workspaceFolder}/include/",
+                "-I/usr/local/include/",
+                "-L/usr/local/lib/",
+                "-lglfw3",
+                "-ldl",
+                "-lpthread",
+                "-framework", "Cocoa",
+                "-framework", "IOKIT",
+                "-framework", "CoreFoundation",
+                "-lobjc"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Tâche générée par le débogueur."
         }
     ],
     "version": "2.0.0"
