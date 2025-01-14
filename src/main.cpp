@@ -10,6 +10,7 @@
 #include "ebo.h"
 #include "vao.h"
 #include "vbo.h"
+#include "camera.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -46,23 +47,56 @@ int main()
     }
 
     GLfloat vert[] = {
-		-0.5f, -0.5f,  0.0f,   0.8f, 0.5f, 1.0f, // Lower left corner
-		0.5f, -0.5f,   0.0f,   0.2f, 0.1f, 0.8f, // Lower right corner
-		0.5f, 0.5f,    0.0f,   0.6f, 0.4f, 0.0f, // Upper corner
-		-0.5f, 0.5f,   0.0f,   1.0f, 1.0f, 0.5f, // Inner left
+	    -0.5f,  0.0f,   0.5f,   0.8f, 0.5f, 1.0f, // Lower left corner
+	    -0.5f,  0.0f,  -0.5f,   0.2f, 0.9f, 0.8f, // Lower right corner
+		0.5f,   0.0f,  -0.5f,   0.6f, 0.4f, 0.0f, // Upper corner
+	    0.5f,   0.0f,   0.5f,   0.3f, 1.0f, 0.5f, // Inner left
+        0.0f,   0.8f,   0.0f,   1.0f, 0.0f, 0.5f, // Inner left
 	};
 
     GLuint indices[] = {
-        0, 2, 3,
         0, 1, 2,
+        0, 2, 3,
+        0, 1, 4,
+        1, 2, 4,
+        2, 3, 4,
+        3, 0, 4
     };
+
+    GLfloat lightVertices[] =
+{ //     COORDINATES     //
+	-0.1f, -0.1f,  0.1f,
+	-0.1f, -0.1f, -0.1f,
+	 0.1f, -0.1f, -0.1f,
+	 0.1f, -0.1f,  0.1f,
+	-0.1f,  0.1f,  0.1f,
+	-0.1f,  0.1f, -0.1f,
+	 0.1f,  0.1f, -0.1f,
+	 0.1f,  0.1f,  0.1f
+};
+
+GLuint lightIndices[] =
+{
+	0, 1, 2,
+	0, 2, 3,
+	0, 4, 7,
+	0, 7, 3,
+	3, 7, 6,
+	3, 6, 2,
+	2, 6, 5,
+	2, 5, 1,
+	1, 5, 4,
+	1, 4, 0,
+	4, 5, 6,
+	4, 6, 7
+};
 
     Shader shader("include/vertex.glsl", "include/frag.glsl");
 
     vao vao;
     vao.bind();
 
-    vbo vbo(vert, sizeof(vert));
+    vbo vbo(vert, sizeof(vert)); //Remove the sizeof
     ebo ebo(indices, sizeof(indices));
 
     vao.linkAttr(vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
@@ -71,8 +105,32 @@ int main()
     vbo.unbind();
     ebo.unbind();
 
-    GLuint unID = glGetUniformLocation(shader._ID, "scale");
+    Shader lightShader("include/lightVert.glsl", "include/lightFrag.glsl");
 
+    class::vao lightVao;
+    lightVao.bind();
+
+    class::vbo lightVbo(lightVertices, sizeof(lightVertices));
+    class::ebo lightEbo(lightIndices, sizeof(lightIndices));
+
+    lightVao.linkAttr(lightVbo, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+
+    lightVao.unbind();
+    lightVbo.unbind();
+    lightEbo.unbind();
+
+    glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
+    glm::mat4 lightModel = glm::mat4(1.0f);
+    lightModel = glm::translate(lightModel, lightPos);
+
+    glm::vec3 pyramidPos = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::mat4 pyramidModel = glm::mat4(1.0f);
+    pyramidModel = glm::translate(pyramidModel, pyramidPos);
+
+    lightShader.use();
+    glUniformMatrix4fv(glGetUniformLocation(lightShader._ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
+    shader.use();
+    glUniformMatrix4fv(glGetUniformLocation(shader._ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
 
     // std::vector<glm::vec3> gridVerts;
     // int n = 5;
@@ -85,6 +143,10 @@ int main()
     //     gridVerts.push_back(glm::vec3(n, 0, i));
     // }
 
+    glEnable(GL_DEPTH_TEST);
+
+    camera camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
+
     // render loop
     while (!glfwWindowShouldClose(window))
     {
@@ -95,34 +157,25 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        camera.inputs(window);
+        camera.updateMatrix(45.0f, 0.5f, 100.0f);
         shader.use();
-
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = glm::mat4(1.0f);
-        glm::mat4 proj = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
-        proj = glm::perspective(glm::radians(45.0f), (float)(SCR_WIDTH/SCR_HEIGHT), 0.1f, 100.0f);
-
-        // Outputs the matrices into the Vertex Shader
-		int modelLoc = glGetUniformLocation(shader._ID, "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		int viewLoc = glGetUniformLocation(shader._ID, "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		int projLoc = glGetUniformLocation(shader._ID, "proj");
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
-
-        glUniform1f(unID, 0.5f);
-
-        glEnable(GL_DEPTH_TEST);
+        camera.matrix(shader, "camMatrix");
 
         vao.bind();
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+
+        lightShader.use();
+        camera.matrix(lightShader, "camMatrix");
+        lightVao.bind();
+        glDrawElements(GL_TRIANGLES, sizeof(lightIndices) / sizeof(int), GL_UNSIGNED_INT, 0);
 
         // swap buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
 
     vao.del();
     vbo.del();
