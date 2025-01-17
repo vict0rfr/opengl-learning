@@ -47,20 +47,36 @@ int main()
     }
 
     GLfloat vert[] = {
-	    -0.5f,  0.0f,   0.5f,   0.8f, 0.5f, 1.0f, // Lower left corner
-	    -0.5f,  0.0f,  -0.5f,   0.2f, 0.9f, 0.8f, // Lower right corner
-		0.5f,   0.0f,  -0.5f,   0.6f, 0.4f, 0.0f, // Upper corner
-	    0.5f,   0.0f,   0.5f,   0.3f, 1.0f, 0.5f, // Inner left
-        0.0f,   0.8f,   0.0f,   1.0f, 0.0f, 0.5f, // Inner left
+        //     COORDINATES     /        COLORS          /        NORMALS       //
+	    -0.5f, 0.0f,  0.5f,     0.8f, 0.7f, 0.4f, 	 0.0f, -1.0f, 0.0f, // Bottom side
+        -0.5f, 0.0f, -0.5f,     0.1f, 0.7f, 0.8f,	 0.0f, -1.0f, 0.0f, // Bottom side
+        0.5f, 0.0f, -0.5f,     0.8f, 0.2f, 0.4f,	     0.0f, -1.0f, 0.0f, // Bottom side
+        0.5f, 0.0f,  0.5f,     0.4f, 0.70f, 0.44f,	     0.0f, -1.0f, 0.0f, // Bottom side
+
+        -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 -0.8f, 0.5f,  0.0f, // Left Side
+        -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 -0.8f, 0.5f,  0.0f, // Left Side
+        0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	     -0.8f, 0.5f,  0.0f, // Left Side
+
+        -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 0.5f, -0.8f, // Non-facing side
+        0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	     0.0f, 0.5f, -0.8f, // Non-facing side
+        0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,      0.0f, 0.5f, -0.8f, // Non-facing side
+
+        0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	     0.8f, 0.5f,  0.0f, // Right side
+        0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	     0.8f, 0.5f,  0.0f, // Right side
+        0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	     0.8f, 0.5f,  0.0f, // Right side
+
+        0.5f, 0.0f,  0.5f,     0.1f, 0.70f, 0.44f,	     0.0f, 0.5f,  0.8f, // Facing side
+        -0.5f, 0.0f,  0.5f,     0.4f, 0.40f, 0.44f, 	 0.0f, 0.5f,  0.8f, // Facing side
+        0.0f, 0.8f,  0.0f,     0.0f, 0.86f, 0.76f,	     0.0f, 0.5f,  0.8f  // Facing side
 	};
 
     GLuint indices[] = {
-        0, 1, 2,
-        0, 2, 3,
-        0, 1, 4,
-        1, 2, 4,
-        2, 3, 4,
-        3, 0, 4
+        0, 1, 2, // Bottom side
+        0, 2, 3, // Bottom side
+        4, 6, 5, // Left side
+        7, 9, 8, // Non-facing side
+        10, 12, 11, // Right side
+        13, 15, 14 // Facing side
     };
 
     GLfloat lightVertices[] =
@@ -99,8 +115,9 @@ GLuint lightIndices[] =
     vbo vbo(vert, sizeof(vert)); //Remove the sizeof
     ebo ebo(indices, sizeof(indices));
 
-    vao.linkAttr(vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
-    vao.linkAttr(vbo, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    vao.linkAttr(vbo, 0, 3, GL_FLOAT, 9 * sizeof(float), (void*)0); // coords
+    vao.linkAttr(vbo, 1, 3, GL_FLOAT, 9 * sizeof(float), (void*)(3 * sizeof(float))); // colors
+    vao.linkAttr(vbo, 2, 3, GL_FLOAT, 9 * sizeof(float), (void*)(6 * sizeof(float))); // normals
     vao.unbind();
     vbo.unbind();
     ebo.unbind();
@@ -119,6 +136,7 @@ GLuint lightIndices[] =
     lightVbo.unbind();
     lightEbo.unbind();
 
+    glm::vec4 lightColor = glm::vec4(1.0f, 0.5f, 1.0f, 1.0f);
     glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
     glm::mat4 lightModel = glm::mat4(1.0f);
     lightModel = glm::translate(lightModel, lightPos);
@@ -129,8 +147,12 @@ GLuint lightIndices[] =
 
     lightShader.use();
     glUniformMatrix4fv(glGetUniformLocation(lightShader._ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
+    glUniform4f(glGetUniformLocation(lightShader._ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
     shader.use();
     glUniformMatrix4fv(glGetUniformLocation(shader._ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
+    glUniform4f(glGetUniformLocation(shader._ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+    glUniform3f(glGetUniformLocation(shader._ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+    
 
     // std::vector<glm::vec3> gridVerts;
     // int n = 5;
@@ -154,12 +176,13 @@ GLuint lightIndices[] =
         processInput(window);
 
         // clear buffers
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(0.2f, 0.1f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         camera.inputs(window);
         camera.updateMatrix(45.0f, 0.5f, 100.0f);
         shader.use();
+        glUniform3f(glGetUniformLocation(shader._ID, "camPos"), camera._pos.x, camera._pos.y, camera._pos.z);
         camera.matrix(shader, "camMatrix");
 
         vao.bind();
